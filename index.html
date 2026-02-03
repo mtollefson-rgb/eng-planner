@@ -268,6 +268,7 @@
   appId: "1:881070104494:web:1ded65fe520f3e5817723f",
   measurementId: "G-5TF7EYQ4YC"
 };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
@@ -463,9 +464,10 @@
         
         const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; // Tim/Glen=0, others=27
         
-        // Logic: 
-        // 1. Calculate Baseline remaining: Max(0, 45 - Project Hours), but capped at standardBaseline.
-        //    (If Project Hours > 18, Baseline starts shrinking below 27. If Project > 45, Baseline becomes 0).
+        // NEW LOGIC: Max Capacity 45. Baseline starts at 27.
+        // As Project hours increase, they first eat 40-45 (buffer), then eat Baseline.
+        // Baseline is whatever is left after Project Hours, capped at 27.
+        // Total never exceeds 45 in the visual calculation.
         const baseline = Math.max(0, Math.min(standardBaseline, 45 - projectHours));
         const total = baseline + projectHours;
 
@@ -536,7 +538,7 @@
                         <div class="bar-seg" style="width:${basePct}%; background:var(--locked);">${stats.baseline > 1 ? stats.baseline.toFixed(1)+'h' : ''}</div>
                         <div class="bar-seg" style="width:${projPct}%; background:var(${dept==='eng'?'--primary':'--qual'});">${stats.project>0.5 ? stats.project.toFixed(1)+'h ('+actualPct+'%)' : ''}</div>
                     </div>
-                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required' : ''}</div>
+                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required (Baseline < 60%)' : ''}</div>
                     <div class="task-list">${tasksHtml || '<div style="text-align:center;color:#ccc;">No tasks</div>'}</div>
                 </div>
             `;
@@ -664,259 +666,23 @@
         if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
     }
 
-    // --- SAMPLES ---
-    function renderSamples() {
-        if(!chartsLoaded) return;
-        const grid = document.getElementById('samplesGrid');
-        grid.innerHTML = '';
-        const products = Object.keys(window.CATEGORY_COSTS).sort();
-        
-        products.forEach(prod => {
-            const div = document.createElement('div');
-            div.className = 'sample-card';
-            const target = window.SAMPLE_TARGETS[prod] || 20;
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Month');
-            data.addColumn('number', 'Qty');
-            data.addColumn('number', 'Target');
-            const rows = [];
-            for(let i=0; i<12; i++) {
-                const sum = window.SAMPLE_ORDERS.reduce((acc, o) => {
-                    const d = new Date(o.date);
-                    return (o.product === prod && d.getMonth() === i && d.getFullYear() === new Date().getFullYear()) ? acc + o.qty : acc;
-                }, 0);
-                rows.push([MONTHS[i], sum, parseInt(target)]);
-            }
-            data.addRows(rows);
-            // Fix ID generation to handle spaces
-            const safeId = "chart_" + prod.replace(/[^a-zA-Z0-9]/g, '');
-            div.innerHTML = `<div class="sample-header"><strong>${prod}</strong><div>Target: <input type="number" class="target-input" value="${target}" onchange="updateSampleTarget('${prod}', this.value)"></div></div><div id="${safeId}" class="centered-chart"></div>`;
-            grid.appendChild(div);
-            // FIXED MARGINS FOR FIRST CHART
-            new google.visualization.LineChart(div.lastElementChild).draw(data, {
-                legend: 'bottom', 
-                chartArea: { left: 40, top: 20, width: '85%', height: '70%' }, 
-                hAxis: { textStyle: { fontSize: 10 } },
-                series: { 1: { lineDashStyle: [4, 4], color: 'red' } }
-            });
-        });
-    }
-
-    window.updateSampleTarget = async (prod, val) => { window.SAMPLE_TARGETS[prod] = val; await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { targets: window.SAMPLE_TARGETS }); }
-    window.addSampleOrder = async () => {
-        const date = document.getElementById('sampDate').value;
-        const prod = document.getElementById('sampProduct').value;
-        const qty = parseInt(document.getElementById('sampQty').value);
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { orders: window.dbOps.arrayUnion({date, product:prod, qty}) });
-        alert("Logged");
-    }
-
-    // --- TIME STUDY ---
-    function renderTimeStudy() {
-        const cat = document.getElementById('tsCat').value;
-        const type = document.getElementById('tsType').value;
-        const listDiv = document.getElementById('subtaskList');
-        listDiv.innerHTML = '';
-        if(!window.TASK_BREAKDOWNS[cat]) window.TASK_BREAKDOWNS[cat] = {};
-        if(!window.TASK_BREAKDOWNS[cat][type]) {
-            const cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
-            window.TASK_BREAKDOWNS[cat][type] = [{name: "General", hours: cost}];
-        }
-        const subs = window.TASK_BREAKDOWNS[cat][type];
-        let total = 0;
-        subs.forEach((s, i) => {
-            total += s.hours;
-            listDiv.innerHTML += `<div class="subtask-row"><input value="${s.name}" onchange="updateSub(${i},'name',this.value)"><input type="number" value="${s.hours}" onchange="updateSub(${i},'hours',this.value)" style="max-width:80px"><button class="icon-btn" onclick="removeSub(${i})">X</button></div>`;
-        });
-        document.getElementById('tsTotal').innerText = total.toFixed(1);
-        if(chartsLoaded) {
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Task'); data.addColumn('number', 'Hours');
-            data.addRows(subs.map(s => [s.name, s.hours]));
-            new google.visualization.PieChart(document.getElementById('tsChart')).draw(data, {legend: 'right', chartArea: {width:'90%', height:'80%'}});
-        }
-    }
-    window.addSubtaskRow = () => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].push({name:"", hours:0}); renderTimeStudy(); }
-    window.updateSub = (i,f,v) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value][i][f] = f==='hours'?parseFloat(v):v; renderTimeStudy(); }
-    window.removeSub = (i) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].splice(i,1); renderTimeStudy(); }
-    window.saveTimeStudy = async () => {
-        const cat = document.getElementById('tsCat').value;
-        const type = document.getElementById('tsType').value;
-        const newCost = window.TASK_BREAKDOWNS[cat][type].reduce((a,b)=>a+b.hours,0);
-        if(!window.CATEGORY_COSTS[cat]) window.CATEGORY_COSTS[cat] = {};
-        window.CATEGORY_COSTS[cat][type] = newCost;
-        await window.dbOps.setDoc(window.dbOps.doc(window.db, "config", "standards"), { costs: window.CATEGORY_COSTS, breakdowns: window.TASK_BREAKDOWNS });
-        for(let p of window.PERSONNEL) {
-            let mod = false;
-            let tasks = [...p.tasks];
-            tasks.forEach(t => {
-                if(t.category === cat && t.type === type) {
-                    t.costPerUnit = newCost;
-                    t.totalHours = newCost * t.qty;
-                    const dur = (t.end - t.start)/(1000*60*60*24)+1;
-                    t.dailyRate = t.totalHours/Math.max(1,dur);
-                    mod = true;
-                }
-            });
-            if(mod) await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", p.id.toString()), { tasks });
-        }
-        alert("Updated");
-    }
-
-    // --- SUMMARY ---
-    function renderSummary() {
-        if(!chartsLoaded || !google.visualization) return;
-        const year = parseInt(document.getElementById('sumYear').value);
-        const monthFilter = document.getElementById('sumMonth').value;
-        
-        // Reliability
-        const relTable = document.getElementById('reliabilityTable');
-        relTable.innerHTML = `<thead><tr><th>Name</th><th>On Time</th><th>Late</th><th>Score</th></tr></thead><tbody></tbody>`;
-        window.PERSONNEL.forEach(p => {
-            const completed = p.tasks.filter(t => t.completed || t.isDone);
-            const onTime = completed.filter(t => t.status === 'On Time').length;
-            const score = completed.length ? Math.round((onTime/completed.length)*100) : 100;
-            const bg = score >= 90 ? 'score-high' : (score >= 80 ? 'score-med' : 'score-low');
-            relTable.innerHTML += `<tr><td>${p.name}</td><td>${onTime}</td><td>${completed.length-onTime}</td><td><span class="status-pill ${bg}">${score}%</span></td></tr>`;
-        });
-
-        // Top Time Consumers (Individual)
-        let allTasks = [];
-        window.PERSONNEL.forEach(p => {
-            p.tasks.forEach(t => {
-                let d = new Date(t.start);
-                if(d.getFullYear() === year) {
-                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
-                        allTasks.push({ eng: p.name, ...t });
-                    }
-                }
-            });
-        });
-        allTasks.sort((a,b) => b.totalHours - a.totalHours);
-        document.getElementById('topTasksTable').innerHTML = `<thead><tr><th>Engineer</th><th>Task</th><th>Cat</th><th>Hrs</th></tr></thead><tbody>${
-            allTasks.slice(0,5).map(t => `<tr><td>${t.eng}</td><td>${t.type}</td><td>${t.category}</td><td>${t.totalHours.toFixed(1)}</td></tr>`).join('')
-        }</tbody>`;
-
-        // Pie Charts (Fixed Logic)
-        const pieContainer = document.getElementById('pieChartsContainer');
-        pieContainer.innerHTML = '';
-        window.PERSONNEL.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'pie-box';
-            pieContainer.appendChild(div);
-
-            let counts = {};
-            p.tasks.forEach(t => {
-                let d = new Date(t.start);
-                if(d.getFullYear() === year) {
-                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
-                        counts[t.type] = (counts[t.type] || 0) + t.totalHours;
-                    }
-                }
-            });
-            const rows = Object.entries(counts).map(([k, v]) => [k, v]);
-            
-            if(rows.length > 0) { 
-                const data = new google.visualization.DataTable();
-                data.addColumn('string', 'Task'); data.addColumn('number', 'Hrs');
-                data.addRows(rows);
-                new google.visualization.PieChart(div).draw(data, {title: p.name, is3D: true, chartArea: {width:'90%', height:'80%'}, colors: Object.values(TASK_COLORS)});
-            } else {
-                div.innerHTML = `<h4 style='margin-top:20px'>${p.name}</h4><p style='color:#ccc'>No active tasks</p>`;
-            }
-        });
-
-        // Efficiency Tables
-        let htmlEff = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
-        let htmlTot = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
-        
-        MONTHS.forEach((mon, i) => {
-            let rowEff = `<tr><td>${mon}</td>`, rowTot = `<tr><td>${mon}</td>`;
-            let rowEffSum = 0, rowTotSum = 0;
-            window.PERSONNEL.forEach(p => {
-                let pHrs = 0;
-                p.tasks.forEach(t => {
-                    let td = new Date(t.start);
-                    if(td.getFullYear()===year && td.getMonth()===i) pHrs += t.totalHours;
-                });
-                let pEff = pHrs > 20 ? pHrs * 0.05 : 0;
-                rowEff += `<td>${pEff.toFixed(1)}</td>`; rowTot += `<td>${pHrs.toFixed(1)}</td>`;
-                rowEffSum += pEff; rowTotSum += pHrs;
-            });
-            rowEff += `<td>${rowEffSum.toFixed(1)}</td></tr>`; rowTot += `<td>${rowTotSum.toFixed(1)}</td></tr>`;
-            htmlEff += rowEff; htmlTot += rowTot;
-        });
-        document.getElementById('efficiencyTable').innerHTML = htmlEff + '</tbody>';
-        document.getElementById('engSummaryTable').innerHTML = htmlTot + '</tbody>';
-    }
-
-    // --- UI HELPERS ---
-    window.updateTaskTypes = (prefix) => {
-        const cat = document.getElementById(`${prefix}Cat`).value;
-        const sel = document.getElementById(`${prefix}Type`);
-        sel.innerHTML = '';
-        const types = prefix === 'qual' ? QUAL_TASK_TYPES : ENG_TASK_TYPES;
-        
-        if(prefix === 'eng' || prefix === 'ts') {
-            if(window.CATEGORY_COSTS[cat]) {
-                Object.keys(window.CATEGORY_COSTS[cat]).forEach(t => sel.add(new Option(t, t)));
-            }
-            if(prefix === 'eng') {
-                sel.add(new Option("Meeting", "Meeting"));
-                sel.add(new Option("Other", "Other"));
-                // NEW: PTO/Holiday
-                sel.add(new Option("PTO", "PTO"));
-                sel.add(new Option("Holiday", "Holiday"));
-            }
-        } else {
-            types.forEach(t => sel.add(new Option(t, t)));
-            // NEW: PTO/Holiday
-            sel.add(new Option("PTO", "PTO"));
-            sel.add(new Option("Holiday", "Holiday"));
-        }
-        if(prefix !== 'ts') checkManual(prefix);
-    }
+    window.openBlock = (pId, tId) => { activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
     
-    window.checkManual = (pre) => { 
-        const val = document.getElementById(`${pre}Type`).value;
-        document.getElementById(`${pre}ManualDiv`).style.display = ['Other','Meeting','PTO','Holiday'].includes(val) ? 'block':'none'; 
-    }
-    
-    window.updateCalcTasks = () => { 
-        const sel = document.getElementById('calcType'); sel.innerHTML=''; 
-        const cat = document.getElementById('calcCat').value;
-        if(window.CATEGORY_COSTS[cat]) Object.keys(window.CATEGORY_COSTS[cat]).forEach(t => sel.add(new Option(t,t)));
-    }
-    window.runCalc = () => { 
-        const cost = window.CATEGORY_COSTS[document.getElementById('calcCat').value]?.[document.getElementById('calcType').value]||0;
-        document.getElementById('calcResult').innerText = (cost * document.getElementById('calcQty').value).toFixed(1);
-    }
-    window.switchView = (e, v) => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'qual-active'));
-        e.target.classList.add(v === 'quality' ? 'qual-active' : 'active');
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(v+'View').classList.add('active');
-        refreshActiveView();
-    }
-    function refreshActiveView() {
-        if(document.getElementById('engineeringView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('qualityView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
-        if(document.getElementById('samplesView').classList.contains('active')) renderSamples();
-        if(document.getElementById('timestudyView').classList.contains('active')) renderTimeStudy();
-        if(document.getElementById('summaryView').classList.contains('active')) renderSummary();
-    }
-    window.changeWeek = (d) => { currentWeekStart = addDays(currentWeekStart, d*7); updateWeekDisplay(); refreshActiveView(); }
-    function updateWeekDisplay() { document.querySelectorAll('.current-week-display').forEach(e => e.innerText = `${currentWeekStart.toLocaleDateString()} - ${addDays(currentWeekStart, 4).toLocaleDateString()}`); }
-    
-    // Modals
-    window.openBlock=(p,t)=>{activeTaskForModal={pId:p,tId:t};document.getElementById('blockModal').style.display='block';}
-    window.confirmBlock=async()=>{
-        const p=window.PERSONNEL.find(x=>x.id===activeTaskForModal.pId);const tasks=[...p.tasks];
-        tasks.find(x=>x.id===activeTaskForModal.tId).blocked=true;
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db,"personnel",activeTaskForModal.pId.toString()),{tasks});
+    window.confirmBlock = async () => {
+        const p = window.PERSONNEL.find(x => x.id === activeTaskForModal.pId);
+        const tasks = [...p.tasks];
+        const t = tasks.find(x => x.id === activeTaskForModal.tId);
+        t.blocked = true;
+        
+        const reason = document.getElementById('blockReason').value;
+        if(!t.history) t.history = [];
+        t.history.push({date: new Date(), action: `Blocked: ${reason}`});
+        
+        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", activeTaskForModal.pId.toString()), { tasks });
         closeModal('blockModal');
+        document.getElementById('blockReason').value = ''; 
     }
+
     window.openHistory=(p,t)=>{
         document.getElementById('historyLog').innerHTML=window.PERSONNEL.find(x=>x.id===p).tasks.find(x=>x.id===t).history.map(h=>`<div style="border-bottom:1px solid #eee;padding:5px;">${new Date(h.date.toDate?h.date.toDate():h.date).toLocaleString()}: ${h.action}</div>`).join('');
         document.getElementById('historyModal').style.display='block';
