@@ -100,7 +100,7 @@
 </head>
 <body>
 
-<div id="loadingOverlay">Connecting to Database...</div>
+<div id="loadingOverlay">Loading Data...</div>
 
 <div class="container">
     <header>
@@ -256,7 +256,7 @@
       from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // -----------------------------------------------------------
-    // 🚨 KEYS INSERTED FROM YOUR PROMPT 🚨
+    // 🚨 PASTE YOUR FIREBASE CONFIG HERE 🚨
     // -----------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
@@ -268,21 +268,10 @@
       measurementId: "G-5TF7EYQ4YC"
     };
 
-    let app, db;
-    try {
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        window.db = db;
-        window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
-        console.log("Firebase initialized successfully");
-    } catch (error) {
-        document.getElementById('loadingOverlay').innerHTML = `<div style="color:red; text-align:center;">Connection Failed<br><small>${error.message}</small></div>`;
-        alert("Database Connection Failed. Check console for details.");
-        console.error("Firebase Init Error:", error);
-    }
-
-    // --- GLOBAL VARS ---
-    window.activeTaskForModal = null; 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
 
     // --- REPAIR TOOL (Fixes "Late" History) ---
     async function repairLegacyData(personnelList) {
@@ -307,7 +296,6 @@
     }
 
     async function initDB() {
-        if(!db) return; // Stop if init failed
         const personnel = [
             {id:0, name:"Maxwell", role:"Eng 1", dept:"eng"}, {id:1, name:"Lee", role:"Eng 2", dept:"eng"},
             {id:2, name:"Jordon", role:"Eng 3", dept:"eng"}, {id:3, name:"Tim", role:"Lab Tech", dept:"eng"},
@@ -321,6 +309,7 @@
         const confRef = doc(db, "config", "standards");
         const confSnap = await getDoc(confRef);
         
+        // AUTO-UPDATE DB KEYS
         if(!confSnap.exists()) {
             await setDoc(confRef, { costs: window.DEFAULT_COSTS, breakdowns: {} });
         } else {
@@ -358,16 +347,6 @@
         if(!window.repaired) { repairLegacyData(window.PERSONNEL); window.repaired=true; }
         document.getElementById('loadingOverlay').style.display = 'none';
         refreshActiveView();
-    }, (error) => {
-        // ERROR HANDLING FOR PERMISSIONS
-        console.error("Firestore Listen Error:", error);
-        document.getElementById('loadingOverlay').style.display = 'flex';
-        document.getElementById('loadingOverlay').innerHTML = `<div style="text-align:center; padding:20px; background:white; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.2);">
-            <h3 style="color:red">Connection Error</h3>
-            <p>${error.code}</p>
-            <p style="font-size:0.8em; color:#666;">If you see 'permission-denied', your API key is blocked.<br>
-            If you are running this locally, you must add <strong>localhost</strong> to your API Key restrictions.</p>
-        </div>`;
     });
 
     onSnapshot(doc(db, "config", "standards"), (d) => {
@@ -429,6 +408,7 @@
     const TASK_COLORS = { "Comparison":"#4285F4", "Engineering Design":"#34A853", "Product Testing":"#FBBC05", "PTO":"#9ca3af", "Holiday":"#9ca3af" };
 
     let currentWeekStart = getMonday(new Date());
+    let activeTaskForModal = null; 
 
     document.addEventListener('DOMContentLoaded', () => {
         const buildInputs = (id) => `
@@ -482,10 +462,19 @@
         });
         
         const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; // Tim/Glen=0, others=27
+        
+        // NEW LOGIC: Max Capacity 45. Baseline starts at 27.
+        // As Project hours increase, they first eat 40-45 (buffer), then eat Baseline.
+        // Baseline is whatever is left after Project Hours, capped at 27.
+        // Total never exceeds 45 in the visual calculation.
         const baseline = Math.max(0, Math.min(standardBaseline, 45 - projectHours));
         const total = baseline + projectHours;
 
-        return { baseline, project: projectHours, total };
+        return { 
+            baseline: baseline, 
+            project: projectHours, 
+            total: total 
+        };
     }
 
     function renderDashboard() {
@@ -500,6 +489,10 @@
             const projPct = Math.min(100, (stats.project/TOTAL_CAPACITY)*100);
             const actualPct = Math.round((stats.project/TOTAL_CAPACITY)*100);
             const basePct = Math.min(100-projPct, (stats.baseline/TOTAL_CAPACITY)*100);
+            
+            // VP Trigger for visual: 
+            // For Tim/Glen (ID 3,5): If total > 45
+            // For Others: If baseline < 27 (which means Project > 18)
             const isVP = [3, 5].includes(p.id) ? stats.project > 45 : stats.baseline < 27;
 
             let displayTasks = p.tasks.filter(t => t.end >= currentWeekStart && t.start <= addDays(currentWeekStart, 6));
@@ -594,6 +587,7 @@
         if(end < start) return alert("End < Start");
         let cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
         
+        // Manual override for specific types
         if(['Other','Meeting','PTO','Holiday'].includes(type)) { 
             if(!manual) return alert("Enter total hours"); 
             cost = manual; 
@@ -603,27 +597,31 @@
         const duration = (end - start)/(1000*60*60*24) + 1;
         const dailyRate = totalHours / Math.max(1, duration);
 
-        // --- VP CHECK LOGIC ---
+        // --- VP CHECK LOGIC (UPDATED) ---
         const person = window.PERSONNEL.find(x => x.id == pId);
         const targetWeek = getMonday(start);
         
+        // Existing Project Load
         const stats = getWeeklyLoad(person, targetWeek);
         const currentProjectLoad = stats.project;
         
+        // New Impact (est. 5 day overlap max)
         const overlapDays = Math.min(5, duration); 
         const newProjectImpact = dailyRate * overlapDays;
         const projectedProjectTotal = currentProjectLoad + newProjectImpact;
         
+        // Check conditions based on person type
         let triggerVP = false;
         let warningMsg = "";
 
         if ([3, 5].includes(person.id)) {
+            // Tim/Glen: Trigger if Total > 45
             if (projectedProjectTotal > 45) {
                 triggerVP = true;
                 warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
             }
         } else {
-            // For standard employees, trigger if project work exceeds 18h (which pushes Baseline < 27)
+            // Others: Trigger if Project > 18 (which forces Baseline < 27)
             if (projectedProjectTotal > 18) {
                 triggerVP = true;
                 warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
