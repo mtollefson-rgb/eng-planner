@@ -16,6 +16,7 @@
         .container { max-width: 1600px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 20px; }
 
+        /* Navigation */
         .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-btn { padding: 12px 20px; background: white; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; color: #6b7280; transition: all 0.2s; }
         .tab-btn:hover { background: #f9fafb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -26,6 +27,7 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* Controls & Nav */
         .week-nav { display: flex; justify-content: center; align-items: center; gap: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .nav-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .nav-btn:hover { background: #e5e7eb; }
@@ -39,27 +41,32 @@
         .action-btn { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; height: 38px; min-width: 100px; }
         .qual-btn { background: var(--qual); }
 
+        /* Dashboard & Cards */
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
         .person-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         .card-header { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .card-header h2 { margin: 0; font-size: 1.1em; color: #111827; }
 
+        /* Sample Tracking */
         .samples-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-top: 20px; }
         .sample-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; overflow: hidden; }
         .sample-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .target-input { width: 60px; padding: 4px; text-align: center; border: 1px solid var(--primary); border-radius: 4px; }
         .centered-chart { width: 100%; height: 250px; }
 
+        /* Capacity Bars */
         .bar-container { height: 28px; background: #e5e7eb; border-radius: 4px; overflow: hidden; display: flex; margin: 5px 0; position: relative; }
         .bar-seg { height: 100%; transition: width 0.3s; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75em; font-weight:bold; overflow:hidden; white-space:nowrap; text-shadow: 0px 0px 2px rgba(0,0,0,0.3); }
         .stats-text { display: flex; justify-content: space-between; font-size: 0.8em; color: #666; font-weight: 600; }
         .context-warning { font-size: 0.75em; color: var(--danger); margin-top: 4px; min-height: 1em; }
         
+        /* Tasks */
         .task-item { border: 1px solid var(--border); background: white; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid var(--primary); position: relative; transition: all 0.2s; }
         .task-item.priority-High { border-left-color: var(--danger); }
         .task-item.blocked { border: 2px dashed var(--danger); opacity: 0.8; background: #fef2f2; }
         .task-item.overdue { border: 2px solid var(--danger); box-shadow: 0 0 8px rgba(220, 38, 38, 0.15); }
         .task-item.completed { opacity: 0.6; background: #f0fdf4; border-color: #86efac; border-left-color: #166534; }
+        
         .task-item.type-PTO, .task-item.type-Holiday { border-left-color: var(--pto); background: #f9fafb; background-image: repeating-linear-gradient(45deg, #f9fafb, #f9fafb 10px, #f3f4f6 10px, #f3f4f6 20px); }
         .task-item.type-PTO .task-desc, .task-item.type-Holiday .task-desc { color: #6b7280; font-style: italic; }
 
@@ -73,25 +80,27 @@
         .icon-btn { border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 0.9em; transition:all 0.2s; }
         .icon-btn:hover { background: #f3f4f6; border-color: var(--primary); color: var(--primary); }
 
+        /* Tables & Charts */
         .summary-controls { text-align: center; margin-bottom: 20px; display:flex; justify-content:center; gap:10px; align-items:center; }
         .charts-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 30px; }
-        .pie-box { width: 100%; max-width: 400px; height: 300px; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .pie-box { width: 100%; max-width: 400px; height: 300px; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:10px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
         th { background: #f9fafb; text-align: left; }
         td:first-child { text-align: left; font-weight: bold; }
         .status-pill { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
 
+        /* Modals */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 500px; border-radius: 8px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .close-x { float: right; font-size: 24px; cursor: pointer; color: #999; }
         
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; font-size: 1.5em; font-weight: bold; color: var(--primary); }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; flex-direction:column; justify-content: center; align-items: center; font-size: 1.2em; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div id="loadingOverlay">Loading Data...</div>
+<div id="loadingOverlay">Loading App Data...</div>
 
 <div class="container">
     <header>
@@ -247,7 +256,7 @@
       from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // -----------------------------------------------------------
-    // 🚨 PASTE YOUR FIREBASE CONFIG HERE 🚨
+    // 🚨 KEYS INSERTED FROM YOUR PROMPT 🚨
     // -----------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
@@ -259,12 +268,50 @@
       measurementId: "G-5TF7EYQ4YC"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
-    window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
+    let app, db;
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        window.db = db;
+        window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
+    } catch (error) {
+        document.getElementById('loadingOverlay').innerHTML = `<div style="color:red; text-align:center;">Connection Failed<br><small>${error.message}</small></div>`;
+    }
 
-    // --- REPAIR TOOL (Fixes "Late" History) ---
+    // --- GLOBAL VARS & DEFAULTS ---
+    window.activeTaskForModal = null; 
+    
+    // DEFAULT PERSONNEL (Prevents blank screen)
+    window.PERSONNEL = [
+        {id:0, name:"Maxwell", role:"Eng 1", dept:"eng", tasks:[]}, 
+        {id:1, name:"Lee", role:"Eng 2", dept:"eng", tasks:[]},
+        {id:2, name:"Jordon", role:"Eng 3", dept:"eng", tasks:[]}, 
+        {id:3, name:"Tim", role:"Lab Tech", dept:"eng", tasks:[]},
+        {id:4, name:"Ron", role:"Quality Mgr", dept:"qual", tasks:[]}, 
+        {id:5, name:"Glen", role:"Quality Tech", dept:"qual", tasks:[]}
+    ];
+    window.SAMPLE_ORDERS = [];
+    
+    window.DEFAULT_COSTS = {
+        "Air Shocks & Struts": { "Comparison": 3, "Engineering Design": 2, "Product Testing": 2 },
+        "Air Compressors": { "Comparison": 4, "Engineering Design": 2, "Product Testing": 2 },
+        "Valve Blocks": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "Electric Lift Supports": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "Coil Springs": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "Complete Strut Assemblies": { "Comparison": 2, "Engineering Design": 3, "Product Testing": 2 },
+        "Shock Absorbers": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "Fuel Pumps": { "Comparison": 1, "Engineering Design": 2, "Product Testing": 2 },
+        "Brake Wear Sensors": { "Comparison": 0.5, "Engineering Design": 1, "Product Testing": 1 },
+        "Lift Supports": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "GDI Pumps": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "MAF": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "O2 Sensors": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
+        "Fuel Injectors": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 }
+    };
+    window.CATEGORY_COSTS = JSON.parse(JSON.stringify(window.DEFAULT_COSTS));
+    window.TASK_BREAKDOWNS = {};
+
+    // --- REPAIR TOOL ---
     async function repairLegacyData(personnelList) {
         let fixed = false;
         for(let p of personnelList) {
@@ -278,15 +325,14 @@
                 }
             });
             if(mod) {
-                console.log(`Fixing legacy status for ${p.name}...`);
                 await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", p.id.toString()), { tasks });
                 fixed = true;
             }
         }
-        if(fixed) console.log("Legacy data repair complete.");
     }
 
     async function initDB() {
+        if(!db) return;
         const personnel = [
             {id:0, name:"Maxwell", role:"Eng 1", dept:"eng"}, {id:1, name:"Lee", role:"Eng 2", dept:"eng"},
             {id:2, name:"Jordon", role:"Eng 3", dept:"eng"}, {id:3, name:"Tim", role:"Lab Tech", dept:"eng"},
@@ -300,7 +346,6 @@
         const confRef = doc(db, "config", "standards");
         const confSnap = await getDoc(confRef);
         
-        // AUTO-UPDATE DB KEYS
         if(!confSnap.exists()) {
             await setDoc(confRef, { costs: window.DEFAULT_COSTS, breakdowns: {} });
         } else {
@@ -324,7 +369,7 @@
     }
 
     onSnapshot(collection(db, "personnel"), (snap) => {
-        window.PERSONNEL = [];
+        const newPersonnel = [];
         snap.forEach(d => {
             const data = d.data();
             const tasks = (data.tasks || []).map(t => ({
@@ -333,8 +378,11 @@
                 end: t.end && t.end.toDate ? t.end.toDate() : new Date(t.end),
                 completedDate: t.completedDate && t.completedDate.toDate ? t.completedDate.toDate() : (t.completedDate ? new Date(t.completedDate) : null)
             }));
-            window.PERSONNEL.push({ id: parseInt(d.id), name: data.info.name, role: data.info.role, dept: data.info.dept, tasks: tasks });
+            newPersonnel.push({ id: parseInt(d.id), name: data.info.name, role: data.info.role, dept: data.info.dept, tasks: tasks });
         });
+        
+        if(newPersonnel.length > 0) window.PERSONNEL = newPersonnel;
+        
         if(!window.repaired) { repairLegacyData(window.PERSONNEL); window.repaired=true; }
         document.getElementById('loadingOverlay').style.display = 'none';
         refreshActiveView();
@@ -364,42 +412,21 @@
 <script>
     google.charts.load('current', {'packages':['corechart', 'line']});
     let chartsLoaded = false;
-    google.charts.setOnLoadCallback(() => { chartsLoaded = true; });
+    google.charts.setOnLoadCallback(() => { 
+        chartsLoaded = true;
+        refreshActiveView(); 
+    });
 
     const TOTAL_CAPACITY = 45;
-    const BASELINE_HOURS = 27; // 60% of 45
+    const BASELINE_HOURS = 27; 
     const VP_THRESHOLD = 45;
     const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    window.DEFAULT_COSTS = {
-        "Air Shocks & Struts": { "Comparison": 3, "Engineering Design": 2, "Product Testing": 2 },
-        "Air Compressors": { "Comparison": 4, "Engineering Design": 2, "Product Testing": 2 },
-        "Valve Blocks": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "Electric Lift Supports": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "Coil Springs": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "Complete Strut Assemblies": { "Comparison": 2, "Engineering Design": 3, "Product Testing": 2 },
-        "Shock Absorbers": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "Fuel Pumps": { "Comparison": 1, "Engineering Design": 2, "Product Testing": 2 },
-        "Brake Wear Sensors": { "Comparison": 0.5, "Engineering Design": 1, "Product Testing": 1 },
-        "Lift Supports": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "GDI Pumps": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "MAF": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "O2 Sensors": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 },
-        "Fuel Injectors": { "Comparison": 1, "Engineering Design": 1, "Product Testing": 1 }
-    };
-
-    window.CATEGORY_COSTS = JSON.parse(JSON.stringify(window.DEFAULT_COSTS));
-    window.TASK_BREAKDOWNS = {};
-    window.PERSONNEL = [];
-    window.SAMPLE_ORDERS = [];
-    window.SAMPLE_TARGETS = {};
 
     const ENG_TASK_TYPES = ["Comparison", "Engineering Design", "Product Testing", "Attribute Fill-in", "Customer Feedback", "Research Assignment", "Meeting", "Other"];
     const QUAL_TASK_TYPES = ["NAPA Tech Line", "Warranty Claims", "Quarantine", "SOPs", "Quality Issues", "Time Studies", "Quality Alerts", "Recalls", "Meeting", "Other"];
     const TASK_COLORS = { "Comparison":"#4285F4", "Engineering Design":"#34A853", "Product Testing":"#FBBC05", "PTO":"#9ca3af", "Holiday":"#9ca3af" };
 
     let currentWeekStart = getMonday(new Date());
-    let activeTaskForModal = null; 
 
     document.addEventListener('DOMContentLoaded', () => {
         const buildInputs = (id) => `
@@ -416,6 +443,7 @@
         document.getElementById('qualInputs').innerHTML = buildInputs('qual');
         document.querySelectorAll('input[type="date"]').forEach(i => i.value = new Date().toISOString().split('T')[0]);
         updateWeekDisplay();
+        initDropdowns();
     });
 
     function initDropdowns() {
@@ -452,25 +480,18 @@
             if(days > 0) projectHours += t.dailyRate * days;
         });
         
-        const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; // Tim/Glen=0, others=27
-        
-        // Logic: 
-        // 1. Calculate Baseline remaining: Max(0, 45 - Project Hours), but capped at standardBaseline.
-        //    (If Project Hours > 18, Baseline starts shrinking below 27. If Project > 45, Baseline becomes 0).
+        const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; 
         const baseline = Math.max(0, Math.min(standardBaseline, 45 - projectHours));
         const total = baseline + projectHours;
 
-        return { 
-            baseline: baseline, 
-            project: projectHours, 
-            total: total 
-        };
+        return { baseline, project: projectHours, total };
     }
 
     function renderDashboard() {
         const dept = document.getElementById('engineeringView').classList.contains('active') ? 'eng' : 'qual';
         const container = document.getElementById(dept === 'eng' ? 'engDashboard' : 'qualDashboard');
         container.innerHTML = '';
+        if(!window.PERSONNEL) return;
         const staff = window.PERSONNEL.filter(p => p.dept === dept);
         
         staff.forEach(p => {
@@ -478,10 +499,6 @@
             const projPct = Math.min(100, (stats.project/TOTAL_CAPACITY)*100);
             const actualPct = Math.round((stats.project/TOTAL_CAPACITY)*100);
             const basePct = Math.min(100-projPct, (stats.baseline/TOTAL_CAPACITY)*100);
-            
-            // VP Trigger for visual: 
-            // For Tim/Glen (ID 3,5): If total > 45
-            // For Others: If baseline < 27 (which means Project > 18)
             const isVP = [3, 5].includes(p.id) ? stats.project > 45 : stats.baseline < 27;
 
             let displayTasks = p.tasks.filter(t => t.end >= currentWeekStart && t.start <= addDays(currentWeekStart, 6));
@@ -538,6 +555,7 @@
     function renderCompleted() {
         const tbody = document.querySelector('#masterHistoryTable tbody');
         tbody.innerHTML = '';
+        if(!window.PERSONNEL) return;
         
         let allCompleted = [];
         window.PERSONNEL.forEach(p => {
@@ -562,7 +580,7 @@
     }
 
     // --- ACTIONS ---
-    async function addTask(prefix) {
+    window.addTask = async (prefix) => {
         const pId = document.getElementById(`${prefix}Select`).value;
         const cat = document.getElementById(`${prefix}Cat`).value;
         const type = document.getElementById(`${prefix}Type`).value;
@@ -575,7 +593,6 @@
         if(end < start) return alert("End < Start");
         let cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
         
-        // Manual override for specific types
         if(['Other','Meeting','PTO','Holiday'].includes(type)) { 
             if(!manual) return alert("Enter total hours"); 
             cost = manual; 
@@ -585,31 +602,26 @@
         const duration = (end - start)/(1000*60*60*24) + 1;
         const dailyRate = totalHours / Math.max(1, duration);
 
-        // --- VP CHECK LOGIC (UPDATED) ---
+        // --- VP CHECK LOGIC ---
         const person = window.PERSONNEL.find(x => x.id == pId);
         const targetWeek = getMonday(start);
         
-        // Existing Project Load
         const stats = getWeeklyLoad(person, targetWeek);
         const currentProjectLoad = stats.project;
         
-        // New Impact (est. 5 day overlap max)
         const overlapDays = Math.min(5, duration); 
         const newProjectImpact = dailyRate * overlapDays;
         const projectedProjectTotal = currentProjectLoad + newProjectImpact;
         
-        // Check conditions based on person type
         let triggerVP = false;
         let warningMsg = "";
 
         if ([3, 5].includes(person.id)) {
-            // Tim/Glen: Trigger if Total > 45
             if (projectedProjectTotal > 45) {
                 triggerVP = true;
                 warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
             }
         } else {
-            // Others: Trigger if Project > 18 (which forces Baseline < 27)
             if (projectedProjectTotal > 18) {
                 triggerVP = true;
                 warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
@@ -630,7 +642,7 @@
         await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", pId), { tasks: window.dbOps.arrayUnion(task) });
     }
 
-    async function updateTaskStatus(pId, tId, action) {
+    window.updateTaskStatus = async (pId, tId, action) => {
         const p = window.PERSONNEL.find(x => x.id === pId);
         const tasks = [...p.tasks];
         const idx = tasks.findIndex(t => t.id === tId);
@@ -653,223 +665,6 @@
         }
         await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", pId.toString()), { tasks });
         if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
-    }
-
-    // --- SAMPLES ---
-    function renderSamples() {
-        if(!chartsLoaded) return;
-        const grid = document.getElementById('samplesGrid');
-        grid.innerHTML = '';
-        const products = Object.keys(window.CATEGORY_COSTS).sort();
-        
-        products.forEach(prod => {
-            const div = document.createElement('div');
-            div.className = 'sample-card';
-            const target = window.SAMPLE_TARGETS[prod] || 20;
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Month');
-            data.addColumn('number', 'Qty');
-            data.addColumn('number', 'Target');
-            const rows = [];
-            for(let i=0; i<12; i++) {
-                const sum = window.SAMPLE_ORDERS.reduce((acc, o) => {
-                    const d = new Date(o.date);
-                    return (o.product === prod && d.getMonth() === i && d.getFullYear() === new Date().getFullYear()) ? acc + o.qty : acc;
-                }, 0);
-                rows.push([MONTHS[i], sum, parseInt(target)]);
-            }
-            data.addRows(rows);
-            // Fix ID generation to handle spaces
-            const safeId = "chart_" + prod.replace(/[^a-zA-Z0-9]/g, '');
-            div.innerHTML = `<div class="sample-header"><strong>${prod}</strong><div>Target: <input type="number" class="target-input" value="${target}" onchange="updateSampleTarget('${prod}', this.value)"></div></div><div id="${safeId}" class="centered-chart"></div>`;
-            grid.appendChild(div);
-            // FIXED MARGINS FOR FIRST CHART
-            new google.visualization.LineChart(div.lastElementChild).draw(data, {
-                legend: 'bottom', 
-                chartArea: { left: 40, top: 20, width: '85%', height: '70%' }, 
-                hAxis: { textStyle: { fontSize: 10 } },
-                series: { 1: { lineDashStyle: [4, 4], color: 'red' } }
-            });
-        });
-    }
-
-    window.updateSampleTarget = async (prod, val) => { window.SAMPLE_TARGETS[prod] = val; await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { targets: window.SAMPLE_TARGETS }); }
-    window.addSampleOrder = async () => {
-        const date = document.getElementById('sampDate').value;
-        const prod = document.getElementById('sampProduct').value;
-        const qty = parseInt(document.getElementById('sampQty').value);
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { orders: window.dbOps.arrayUnion({date, product:prod, qty}) });
-        alert("Logged");
-    }
-
-    // --- TIME STUDY ---
-    function renderTimeStudy() {
-        const cat = document.getElementById('tsCat').value;
-        const type = document.getElementById('tsType').value;
-        const listDiv = document.getElementById('subtaskList');
-        listDiv.innerHTML = '';
-        if(!window.TASK_BREAKDOWNS[cat]) window.TASK_BREAKDOWNS[cat] = {};
-        if(!window.TASK_BREAKDOWNS[cat][type]) {
-            const cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
-            window.TASK_BREAKDOWNS[cat][type] = [{name: "General", hours: cost}];
-        }
-        const subs = window.TASK_BREAKDOWNS[cat][type];
-        let total = 0;
-        subs.forEach((s, i) => {
-            total += s.hours;
-            listDiv.innerHTML += `<div class="subtask-row"><input value="${s.name}" onchange="updateSub(${i},'name',this.value)"><input type="number" value="${s.hours}" onchange="updateSub(${i},'hours',this.value)" style="max-width:80px"><button class="icon-btn" onclick="removeSub(${i})">X</button></div>`;
-        });
-        document.getElementById('tsTotal').innerText = total.toFixed(1);
-        if(chartsLoaded) {
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Task'); data.addColumn('number', 'Hours');
-            data.addRows(subs.map(s => [s.name, s.hours]));
-            new google.visualization.PieChart(document.getElementById('tsChart')).draw(data, {legend: 'right', chartArea: {width:'90%', height:'80%'}});
-        }
-    }
-    window.addSubtaskRow = () => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].push({name:"", hours:0}); renderTimeStudy(); }
-    window.updateSub = (i,f,v) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value][i][f] = f==='hours'?parseFloat(v):v; renderTimeStudy(); }
-    window.removeSub = (i) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].splice(i,1); renderTimeStudy(); }
-    window.saveTimeStudy = async () => {
-        const cat = document.getElementById('tsCat').value;
-        const type = document.getElementById('tsType').value;
-        const newCost = window.TASK_BREAKDOWNS[cat][type].reduce((a,b)=>a+b.hours,0);
-        if(!window.CATEGORY_COSTS[cat]) window.CATEGORY_COSTS[cat] = {};
-        window.CATEGORY_COSTS[cat][type] = newCost;
-        await window.dbOps.setDoc(window.dbOps.doc(window.db, "config", "standards"), { costs: window.CATEGORY_COSTS, breakdowns: window.TASK_BREAKDOWNS });
-        for(let p of window.PERSONNEL) {
-            let mod = false;
-            let tasks = [...p.tasks];
-            tasks.forEach(t => {
-                if(t.category === cat && t.type === type) {
-                    t.costPerUnit = newCost;
-                    t.totalHours = newCost * t.qty;
-                    const dur = (t.end - t.start)/(1000*60*60*24)+1;
-                    t.dailyRate = t.totalHours/Math.max(1,dur);
-                    mod = true;
-                }
-            });
-            if(mod) await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", p.id.toString()), { tasks });
-        }
-        alert("Updated");
-    }
-
-    // --- SUMMARY ---
-    function renderSummary() {
-        if(!chartsLoaded || !google.visualization) return;
-        const year = parseInt(document.getElementById('sumYear').value);
-        const monthFilter = document.getElementById('sumMonth').value;
-        
-        // Reliability
-        const relTable = document.getElementById('reliabilityTable');
-        relTable.innerHTML = `<thead><tr><th>Name</th><th>On Time</th><th>Late</th><th>Score</th></tr></thead><tbody></tbody>`;
-        window.PERSONNEL.forEach(p => {
-            const completed = p.tasks.filter(t => t.completed || t.isDone);
-            const onTime = completed.filter(t => t.status === 'On Time').length;
-            const score = completed.length ? Math.round((onTime/completed.length)*100) : 100;
-            const bg = score >= 90 ? 'score-high' : (score >= 80 ? 'score-med' : 'score-low');
-            relTable.innerHTML += `<tr><td>${p.name}</td><td>${onTime}</td><td>${completed.length-onTime}</td><td><span class="status-pill ${bg}">${score}%</span></td></tr>`;
-        });
-
-        // Top Time Consumers (Individual)
-        let allTasks = [];
-        window.PERSONNEL.forEach(p => {
-            p.tasks.forEach(t => {
-                let d = new Date(t.start);
-                if(d.getFullYear() === year) {
-                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
-                        allTasks.push({ eng: p.name, ...t });
-                    }
-                }
-            });
-        });
-        allTasks.sort((a,b) => b.totalHours - a.totalHours);
-        document.getElementById('topTasksTable').innerHTML = `<thead><tr><th>Engineer</th><th>Task</th><th>Cat</th><th>Hrs</th></tr></thead><tbody>${
-            allTasks.slice(0,5).map(t => `<tr><td>${t.eng}</td><td>${t.type}</td><td>${t.category}</td><td>${t.totalHours.toFixed(1)}</td></tr>`).join('')
-        }</tbody>`;
-
-        // Pie Charts (Fixed Logic)
-        const pieContainer = document.getElementById('pieChartsContainer');
-        pieContainer.innerHTML = '';
-        window.PERSONNEL.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'pie-box';
-            pieContainer.appendChild(div);
-
-            let counts = {};
-            p.tasks.forEach(t => {
-                let d = new Date(t.start);
-                if(d.getFullYear() === year) {
-                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
-                        counts[t.type] = (counts[t.type] || 0) + t.totalHours;
-                    }
-                }
-            });
-            const rows = Object.entries(counts).map(([k, v]) => [k, v]);
-            
-            if(rows.length > 0) { 
-                const data = new google.visualization.DataTable();
-                data.addColumn('string', 'Task'); data.addColumn('number', 'Hrs');
-                data.addRows(rows);
-                new google.visualization.PieChart(div).draw(data, {title: p.name, is3D: true, chartArea: {width:'90%', height:'80%'}, colors: Object.values(TASK_COLORS)});
-            } else {
-                div.innerHTML = `<h4 style='margin-top:20px'>${p.name}</h4><p style='color:#ccc'>No active tasks</p>`;
-            }
-        });
-
-        // Efficiency Tables
-        let htmlEff = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
-        let htmlTot = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
-        
-        MONTHS.forEach((mon, i) => {
-            let rowEff = `<tr><td>${mon}</td>`, rowTot = `<tr><td>${mon}</td>`;
-            let rowEffSum = 0, rowTotSum = 0;
-            window.PERSONNEL.forEach(p => {
-                let pHrs = 0;
-                p.tasks.forEach(t => {
-                    let td = new Date(t.start);
-                    if(td.getFullYear()===year && td.getMonth()===i) pHrs += t.totalHours;
-                });
-                let pEff = pHrs > 20 ? pHrs * 0.05 : 0;
-                rowEff += `<td>${pEff.toFixed(1)}</td>`; rowTot += `<td>${pHrs.toFixed(1)}</td>`;
-                rowEffSum += pEff; rowTotSum += pHrs;
-            });
-            rowEff += `<td>${rowEffSum.toFixed(1)}</td></tr>`; rowTot += `<td>${rowTotSum.toFixed(1)}</td></tr>`;
-            htmlEff += rowEff; htmlTot += rowTot;
-        });
-        document.getElementById('efficiencyTable').innerHTML = htmlEff + '</tbody>';
-        document.getElementById('engSummaryTable').innerHTML = htmlTot + '</tbody>';
-    }
-
-    // --- UI HELPER: Update Week Display ---
-    function updateWeekDisplay() {
-        const endOfWeek = addDays(currentWeekStart, 4);
-        document.querySelectorAll('.current-week-display').forEach(e => 
-            e.innerText = `${currentWeekStart.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`
-        );
-    }
-
-    window.changeWeek = (d) => { 
-        currentWeekStart = addDays(currentWeekStart, d*7); 
-        updateWeekDisplay(); 
-        refreshActiveView(); 
-    }
-
-    window.switchView = (e, v) => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'qual-active'));
-        e.target.classList.add(v === 'quality' ? 'qual-active' : 'active');
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(v+'View').classList.add('active');
-        refreshActiveView();
-    }
-    
-    function refreshActiveView() {
-        if(document.getElementById('engineeringView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('qualityView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
-        if(document.getElementById('samplesView').classList.contains('active')) renderSamples();
-        if(document.getElementById('timestudyView').classList.contains('active')) renderTimeStudy();
-        if(document.getElementById('summaryView').classList.contains('active')) renderSummary();
     }
 
     window.openBlock = (pId, tId) => { window.activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
@@ -941,7 +736,267 @@
         closeModal('editModal');
     }
 
+    // --- UI HELPER: Update Week Display ---
+    function updateWeekDisplay() {
+        const endOfWeek = addDays(currentWeekStart, 4);
+        document.querySelectorAll('.current-week-display').forEach(e => 
+            e.innerText = `${currentWeekStart.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`
+        );
+    }
+
+    window.changeWeek = (d) => { 
+        currentWeekStart = addDays(currentWeekStart, d*7); 
+        updateWeekDisplay(); 
+        refreshActiveView(); 
+    }
+
+    window.switchView = (e, v) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'qual-active'));
+        e.target.classList.add(v === 'quality' ? 'qual-active' : 'active');
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(v+'View').classList.add('active');
+        refreshActiveView();
+    }
+    
+    function refreshActiveView() {
+        if(document.getElementById('engineeringView').classList.contains('active')) renderDashboard();
+        if(document.getElementById('qualityView').classList.contains('active')) renderDashboard();
+        if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
+        if(document.getElementById('samplesView').classList.contains('active')) renderSamples();
+        if(document.getElementById('timestudyView').classList.contains('active')) renderTimeStudy();
+        if(document.getElementById('summaryView').classList.contains('active')) renderSummary();
+    }
+
+    // --- SAMPLES ---
+    function renderSamples() {
+        if(!chartsLoaded) return;
+        const grid = document.getElementById('samplesGrid');
+        grid.innerHTML = '';
+        const products = Object.keys(window.CATEGORY_COSTS).sort();
+        
+        products.forEach(prod => {
+            const div = document.createElement('div');
+            div.className = 'sample-card';
+            const target = window.SAMPLE_TARGETS[prod] || 20;
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Month');
+            data.addColumn('number', 'Qty');
+            data.addColumn('number', 'Target');
+            const rows = [];
+            for(let i=0; i<12; i++) {
+                const sum = window.SAMPLE_ORDERS.reduce((acc, o) => {
+                    const d = new Date(o.date);
+                    return (o.product === prod && d.getMonth() === i && d.getFullYear() === new Date().getFullYear()) ? acc + o.qty : acc;
+                }, 0);
+                rows.push([MONTHS[i], sum, parseInt(target)]);
+            }
+            data.addRows(rows);
+            // Fix ID generation to handle spaces
+            const safeId = "chart_" + prod.replace(/[^a-zA-Z0-9]/g, '');
+            div.innerHTML = `<div class="sample-header"><strong>${prod}</strong><div>Target: <input type="number" class="target-input" value="${target}" onchange="updateSampleTarget('${prod}', this.value)"></div></div><div id="${safeId}" class="centered-chart"></div>`;
+            grid.appendChild(div);
+            // FIXED MARGINS FOR FIRST CHART
+            new google.visualization.LineChart(div.lastElementChild).draw(data, {
+                legend: 'bottom', 
+                chartArea: { left: '10%', top: 20, width: '85%', height: '70%' }, 
+                hAxis: { textStyle: { fontSize: 10 } },
+                series: { 1: { lineDashStyle: [4, 4], color: 'red' } }
+            });
+        });
+    }
+
+    window.updateSampleTarget = async (prod, val) => { window.SAMPLE_TARGETS[prod] = val; await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { targets: window.SAMPLE_TARGETS }); }
+    window.addSampleOrder = async () => {
+        const date = document.getElementById('sampDate').value;
+        const prod = document.getElementById('sampProduct').value;
+        const qty = parseInt(document.getElementById('sampQty').value);
+        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "config", "samples"), { orders: window.dbOps.arrayUnion({date, product:prod, qty}) });
+        alert("Logged");
+    }
+
+    // --- TIME STUDY ---
+    function renderTimeStudy() {
+        const cat = document.getElementById('tsCat').value;
+        const type = document.getElementById('tsType').value;
+        const listDiv = document.getElementById('subtaskList');
+        listDiv.innerHTML = '';
+        if(!window.TASK_BREAKDOWNS[cat]) window.TASK_BREAKDOWNS[cat] = {};
+        if(!window.TASK_BREAKDOWNS[cat][type]) {
+            const cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
+            window.TASK_BREAKDOWNS[cat][type] = [{name: "General", hours: cost}];
+        }
+        const subs = window.TASK_BREAKDOWNS[cat][type];
+        let total = 0;
+        subs.forEach((s, i) => {
+            total += s.hours;
+            listDiv.innerHTML += `<div class="subtask-row"><input value="${s.name}" onchange="updateSub(${i},'name',this.value)"><input type="number" value="${s.hours}" onchange="updateSub(${i},'hours',this.value)" style="max-width:80px"><button class="icon-btn" onclick="removeSub(${i})">X</button></div>`;
+        });
+        document.getElementById('tsTotal').innerText = total.toFixed(1);
+        if(chartsLoaded) {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Task'); data.addColumn('number', 'Hours');
+            data.addRows(subs.map(s => [s.name, s.hours]));
+            new google.visualization.PieChart(document.getElementById('tsChart')).draw(data, {legend: 'right', chartArea: {width:'90%', height:'80%'}});
+        }
+    }
+    window.addSubtaskRow = () => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].push({name:"", hours:0}); renderTimeStudy(); }
+    window.updateSub = (i,f,v) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value][i][f] = f==='hours'?parseFloat(v):v; renderTimeStudy(); }
+    window.removeSub = (i) => { window.TASK_BREAKDOWNS[document.getElementById('tsCat').value][document.getElementById('tsType').value].splice(i,1); renderTimeStudy(); }
+    window.saveTimeStudy = async () => {
+        const cat = document.getElementById('tsCat').value;
+        const type = document.getElementById('tsType').value;
+        const newCost = window.TASK_BREAKDOWNS[cat][type].reduce((a,b)=>a+b.hours,0);
+        if(!window.CATEGORY_COSTS[cat]) window.CATEGORY_COSTS[cat] = {};
+        window.CATEGORY_COSTS[cat][type] = newCost;
+        await window.dbOps.setDoc(window.dbOps.doc(window.db, "config", "standards"), { costs: window.CATEGORY_COSTS, breakdowns: window.TASK_BREAKDOWNS });
+        for(let p of window.PERSONNEL) {
+            let mod = false;
+            let tasks = [...p.tasks];
+            tasks.forEach(t => {
+                if(t.category === cat && t.type === type) {
+                    t.costPerUnit = newCost;
+                    t.totalHours = newCost * t.qty;
+                    const dur = (t.end - t.start)/(1000*60*60*24)+1;
+                    t.dailyRate = t.totalHours/Math.max(1,dur);
+                    mod = true;
+                }
+            });
+            if(mod) await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", p.id.toString()), { tasks });
+        }
+        alert("Updated");
+    }
+
+    // --- SUMMARY ---
+    function renderSummary() {
+        const year = parseInt(document.getElementById('sumYear').value);
+        const monthFilter = document.getElementById('sumMonth').value;
+        
+        // Reliability (Render Immediately)
+        const relTable = document.getElementById('reliabilityTable');
+        relTable.innerHTML = `<thead><tr><th>Name</th><th>On Time</th><th>Late</th><th>Score</th></tr></thead><tbody></tbody>`;
+        window.PERSONNEL.forEach(p => {
+            const completed = p.tasks.filter(t => t.completed || t.isDone);
+            const onTime = completed.filter(t => t.status === 'On Time').length;
+            const score = completed.length ? Math.round((onTime/completed.length)*100) : 100;
+            const bg = score >= 90 ? 'score-high' : (score >= 80 ? 'score-med' : 'score-low');
+            relTable.innerHTML += `<tr><td>${p.name}</td><td>${onTime}</td><td>${completed.length-onTime}</td><td><span class="status-pill ${bg}">${score}%</span></td></tr>`;
+        });
+
+        // Top Time Consumers (Individual)
+        let allTasks = [];
+        window.PERSONNEL.forEach(p => {
+            p.tasks.forEach(t => {
+                let d = new Date(t.start);
+                if(d.getFullYear() === year) {
+                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
+                        allTasks.push({ eng: p.name, ...t });
+                    }
+                }
+            });
+        });
+        allTasks.sort((a,b) => b.totalHours - a.totalHours);
+        document.getElementById('topTasksTable').innerHTML = `<thead><tr><th>Engineer</th><th>Task</th><th>Cat</th><th>Hrs</th></tr></thead><tbody>${
+            allTasks.slice(0,5).map(t => `<tr><td>${t.eng}</td><td>${t.type}</td><td>${t.category}</td><td>${t.totalHours.toFixed(1)}</td></tr>`).join('')
+        }</tbody>`;
+
+        // Efficiency Tables
+        let htmlEff = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+        let htmlTot = `<thead><tr><th>Month</th>${window.PERSONNEL.map(p=>`<th>${p.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+        
+        MONTHS.forEach((mon, i) => {
+            let rowEff = `<tr><td>${mon}</td>`, rowTot = `<tr><td>${mon}</td>`;
+            let rowEffSum = 0, rowTotSum = 0;
+            window.PERSONNEL.forEach(p => {
+                let pHrs = 0;
+                p.tasks.forEach(t => {
+                    let td = new Date(t.start);
+                    if(td.getFullYear()===year && td.getMonth()===i) pHrs += t.totalHours;
+                });
+                let pEff = pHrs > 20 ? pHrs * 0.05 : 0;
+                rowEff += `<td>${pEff.toFixed(1)}</td>`; rowTot += `<td>${pHrs.toFixed(1)}</td>`;
+                rowEffSum += pEff; rowTotSum += pHrs;
+            });
+            rowEff += `<td>${rowEffSum.toFixed(1)}</td></tr>`; rowTot += `<td>${rowTotSum.toFixed(1)}</td></tr>`;
+            htmlEff += rowEff; htmlTot += rowTot;
+        });
+        document.getElementById('efficiencyTable').innerHTML = htmlEff + '</tbody>';
+        document.getElementById('engSummaryTable').innerHTML = htmlTot + '</tbody>';
+
+        // Pie Charts (Render Safely if Charts Loaded)
+        if(!chartsLoaded) return;
+        const pieContainer = document.getElementById('pieChartsContainer');
+        pieContainer.innerHTML = '';
+        window.PERSONNEL.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'pie-box';
+            pieContainer.appendChild(div);
+
+            let counts = {};
+            p.tasks.forEach(t => {
+                let d = new Date(t.start);
+                if(d.getFullYear() === year) {
+                    if(monthFilter === 'All' || d.getMonth().toString() === monthFilter) {
+                        counts[t.type] = (counts[t.type] || 0) + t.totalHours;
+                    }
+                }
+            });
+            const rows = Object.entries(counts).map(([k, v]) => [k, v]);
+            
+            if(rows.length > 0) { 
+                const data = new google.visualization.DataTable();
+                data.addColumn('string', 'Task'); data.addColumn('number', 'Hrs');
+                data.addRows(rows);
+                new google.visualization.PieChart(div).draw(data, {title: p.name, is3D: true, chartArea: {width:'90%', height:'80%'}, colors: Object.values(TASK_COLORS)});
+            } else {
+                div.innerHTML = `<h4 style='margin-top:20px'>${p.name}</h4><p style='color:#ccc'>No active tasks</p>`;
+            }
+        });
+    }
+
     window.closeModal=(id)=>document.getElementById(id).style.display='none';
+    
+    // UI HELPERS (Fixes Race Condition)
+    window.updateTaskTypes = (prefix) => {
+        const catEl = document.getElementById(`${prefix}Cat`);
+        if(!catEl) return;
+        
+        const cat = catEl.value;
+        const sel = document.getElementById(`${prefix}Type`);
+        sel.innerHTML = '';
+        const types = prefix === 'qual' ? QUAL_TASK_TYPES : ENG_TASK_TYPES;
+        
+        if(prefix === 'eng' || prefix === 'ts') {
+            if(window.CATEGORY_COSTS[cat]) {
+                Object.keys(window.CATEGORY_COSTS[cat]).forEach(t => sel.add(new Option(t, t)));
+            }
+            if(prefix === 'eng') {
+                sel.add(new Option("Meeting", "Meeting"));
+                sel.add(new Option("Other", "Other"));
+                sel.add(new Option("PTO", "PTO"));
+                sel.add(new Option("Holiday", "Holiday"));
+            }
+        } else {
+            types.forEach(t => sel.add(new Option(t, t)));
+            sel.add(new Option("PTO", "PTO"));
+            sel.add(new Option("Holiday", "Holiday"));
+        }
+        if(prefix !== 'ts') checkManual(prefix);
+    }
+    
+    window.checkManual = (pre) => { 
+        const val = document.getElementById(`${pre}Type`).value;
+        document.getElementById(`${pre}ManualDiv`).style.display = ['Other','Meeting','PTO','Holiday'].includes(val) ? 'block':'none'; 
+    }
+    
+    window.updateCalcTasks = () => { 
+        const sel = document.getElementById('calcType'); sel.innerHTML=''; 
+        const cat = document.getElementById('calcCat').value;
+        if(window.CATEGORY_COSTS[cat]) Object.keys(window.CATEGORY_COSTS[cat]).forEach(t => sel.add(new Option(t,t)));
+    }
+    window.runCalc = () => { 
+        const cost = window.CATEGORY_COSTS[document.getElementById('calcCat').value]?.[document.getElementById('calcType').value]||0;
+        document.getElementById('calcResult').innerText = (cost * document.getElementById('calcQty').value).toFixed(1);
+    }
 </script>
 </body>
 </html>
