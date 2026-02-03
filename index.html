@@ -260,14 +260,14 @@
     // 🚨 PASTE YOUR FIREBASE CONFIG HERE 🚨
     // -----------------------------------------------------------
     const firebaseConfig = {
-  apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
-  authDomain: "engineering-task-tracker.firebaseapp.com",
-  projectId: "engineering-task-tracker",
-  storageBucket: "engineering-task-tracker.firebasestorage.app",
-  messagingSenderId: "881070104494",
-  appId: "1:881070104494:web:1ded65fe520f3e5817723f",
-  measurementId: "G-5TF7EYQ4YC"
-};
+        apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
+        authDomain: "engineering-task-tracker.firebaseapp.com",
+        projectId: "engineering-task-tracker",
+        storageBucket: "engineering-task-tracker.firebasestorage.app",
+        messagingSenderId: "881070104494",
+        appId: "1:881070104494:web:1ded65fe520f3e5817723f",
+        measurementId: "G-5TF7EYQ4YC"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -275,7 +275,7 @@
     window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
 
     // --- GLOBAL VARS ---
-    window.activeTaskForModal = null; 
+    window.activeTaskForModal = null; // Ensure global scope
 
     // --- REPAIR TOOL (Fixes "Late" History) ---
     async function repairLegacyData(personnelList) {
@@ -527,7 +527,7 @@
                         <div class="bar-seg" style="width:${basePct}%; background:var(--locked);">${stats.baseline > 1 ? stats.baseline.toFixed(1)+'h' : ''}</div>
                         <div class="bar-seg" style="width:${projPct}%; background:var(${dept==='eng'?'--primary':'--qual'});">${stats.project>0.5 ? stats.project.toFixed(1)+'h ('+actualPct+'%)' : ''}</div>
                     </div>
-                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required' : ''}</div>
+                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required (Baseline < 60%)' : ''}</div>
                     <div class="task-list">${tasksHtml || '<div style="text-align:center;color:#ccc;">No tasks</div>'}</div>
                 </div>
             `;
