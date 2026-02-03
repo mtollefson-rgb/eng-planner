@@ -461,11 +461,12 @@
             if(days > 0) projectHours += t.dailyRate * days;
         });
         
-        // NEW LOGIC: Max Capacity 45. Baseline starts at 27.
-        // As Project hours increase, they first eat 40-45 (buffer), then eat Baseline.
-        // Baseline is whatever is left after Project Hours, capped at 27.
-        // Total never exceeds 45 in the visual calculation.
-        const baseline = Math.max(0, Math.min(BASELINE_HOURS, 45 - projectHours));
+        const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; // Tim/Glen=0, others=27
+        
+        // Logic: 
+        // 1. Calculate Baseline remaining: Max(0, 45 - Project Hours), but capped at standardBaseline.
+        //    (If Project Hours > 18, Baseline starts shrinking below 27. If Project > 45, Baseline becomes 0).
+        const baseline = Math.max(0, Math.min(standardBaseline, 45 - projectHours));
         const total = baseline + projectHours;
 
         return { 
@@ -487,8 +488,10 @@
             const actualPct = Math.round((stats.project/TOTAL_CAPACITY)*100);
             const basePct = Math.min(100-projPct, (stats.baseline/TOTAL_CAPACITY)*100);
             
-            // VP Trigger for visual: If Baseline < 27 (meaning Project > 18)
-            const isVP = stats.baseline < 27;
+            // VP Trigger for visual: 
+            // For Tim/Glen (ID 3,5): If total > 45
+            // For Others: If baseline < 27 (which means Project > 18)
+            const isVP = [3, 5].includes(p.id) ? stats.project > 45 : stats.baseline < 27;
 
             let displayTasks = p.tasks.filter(t => t.end >= currentWeekStart && t.start <= addDays(currentWeekStart, 6));
             const today = new Date();
@@ -516,6 +519,7 @@
                     </div>
                     ${t.details ? `<div class="task-notes">${t.details}</div>` : ''}
                     <div class="task-actions">
+                        ${t.blocked ? `<button class="icon-btn" onclick="updateTaskStatus(${p.id}, ${t.id}, 'unblock')" title="Unblock" style="color:green; border-color:green;">▶</button>` : ''}
                         <button class="icon-btn" onclick="openEdit(${p.id}, ${t.id})" title="Edit Details/Date">✎</button>
                         <button class="icon-btn" onclick="openHistory(${p.id}, ${t.id})" title="History">🕒</button>
                         <button class="icon-btn" onclick="openBlock(${p.id}, ${t.id})" title="Block">🚫</button>
@@ -532,7 +536,7 @@
                         <div class="bar-seg" style="width:${basePct}%; background:var(--locked);">${stats.baseline > 1 ? stats.baseline.toFixed(1)+'h' : ''}</div>
                         <div class="bar-seg" style="width:${projPct}%; background:var(${dept==='eng'?'--primary':'--qual'});">${stats.project>0.5 ? stats.project.toFixed(1)+'h ('+actualPct+'%)' : ''}</div>
                     </div>
-                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required (Baseline < 60%)' : ''}</div>
+                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required' : ''}</div>
                     <div class="task-list">${tasksHtml || '<div style="text-align:center;color:#ccc;">No tasks</div>'}</div>
                 </div>
             `;
@@ -591,7 +595,6 @@
         const dailyRate = totalHours / Math.max(1, duration);
 
         // --- VP CHECK LOGIC (UPDATED) ---
-        // Trigger if adding this task reduces Baseline below 27 (i.e., Project Total > 18)
         const person = window.PERSONNEL.find(x => x.id == pId);
         const targetWeek = getMonday(start);
         
@@ -604,9 +607,26 @@
         const newProjectImpact = dailyRate * overlapDays;
         const projectedProjectTotal = currentProjectLoad + newProjectImpact;
         
-        // Threshold: 45 Total - 27 Baseline = 18 Project Max
-        if (projectedProjectTotal > 18) {
-            const confirmVP = confirm(`⚠️ VP Approval Required\n\nThis task adds ~${newProjectImpact.toFixed(1)}h of project work.\nTotal Project Load: ${projectedProjectTotal.toFixed(1)}h\n\nThis forces Baseline work below 60% (27h). Proceed?`);
+        // Check conditions based on person type
+        let triggerVP = false;
+        let warningMsg = "";
+
+        if ([3, 5].includes(person.id)) {
+            // Tim/Glen: Trigger if Total > 45
+            if (projectedProjectTotal > 45) {
+                triggerVP = true;
+                warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
+            }
+        } else {
+            // Others: Trigger if Project > 18 (which forces Baseline < 27)
+            if (projectedProjectTotal > 18) {
+                triggerVP = true;
+                warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
+            }
+        }
+
+        if (triggerVP) {
+            const confirmVP = confirm(`⚠️ VP Approval Required\n\n${warningMsg}\n\nDo you have VP approval to proceed?`);
             if (!confirmVP) return;
         }
 
@@ -634,6 +654,9 @@
             tasks[idx].completed = false;
             tasks[idx].isDone = false;
             tasks[idx].history.push({date: new Date(), action: "Reopened"});
+        } else if(action === 'unblock') {
+            tasks[idx].blocked = false;
+            tasks[idx].history.push({date: new Date(), action: "Unblocked"});
         } else if(action === 'delete') {
             tasks.splice(idx, 1);
         }
