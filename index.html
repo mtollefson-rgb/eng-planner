@@ -274,6 +274,9 @@
     window.db = db;
     window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
 
+    // --- GLOBAL VARS ---
+    window.activeTaskForModal = null; // Ensure global scope
+
     // --- REPAIR TOOL (Fixes "Late" History) ---
     async function repairLegacyData(personnelList) {
         let fixed = false;
@@ -310,7 +313,6 @@
         const confRef = doc(db, "config", "standards");
         const confSnap = await getDoc(confRef);
         
-        // AUTO-UPDATE DB KEYS
         if(!confSnap.exists()) {
             await setDoc(confRef, { costs: window.DEFAULT_COSTS, breakdowns: {} });
         } else {
@@ -409,7 +411,6 @@
     const TASK_COLORS = { "Comparison":"#4285F4", "Engineering Design":"#34A853", "Product Testing":"#FBBC05", "PTO":"#9ca3af", "Holiday":"#9ca3af" };
 
     let currentWeekStart = getMonday(new Date());
-    let activeTaskForModal = null; 
 
     document.addEventListener('DOMContentLoaded', () => {
         const buildInputs = (id) => `
@@ -463,25 +464,17 @@
         });
         
         const standardBaseline = [3, 5].includes(person.id) ? 0 : BASELINE_HOURS; // Tim/Glen=0, others=27
-        
-        // NEW LOGIC: Max Capacity 45. Baseline starts at 27.
-        // As Project hours increase, they first eat 40-45 (buffer), then eat Baseline.
-        // Baseline is whatever is left after Project Hours, capped at 27.
-        // Total never exceeds 45 in the visual calculation.
         const baseline = Math.max(0, Math.min(standardBaseline, 45 - projectHours));
         const total = baseline + projectHours;
 
-        return { 
-            baseline: baseline, 
-            project: projectHours, 
-            total: total 
-        };
+        return { baseline, project: projectHours, total };
     }
 
     function renderDashboard() {
         const dept = document.getElementById('engineeringView').classList.contains('active') ? 'eng' : 'qual';
         const container = document.getElementById(dept === 'eng' ? 'engDashboard' : 'qualDashboard');
         container.innerHTML = '';
+        if(!window.PERSONNEL) return;
         const staff = window.PERSONNEL.filter(p => p.dept === dept);
         
         staff.forEach(p => {
@@ -489,10 +482,6 @@
             const projPct = Math.min(100, (stats.project/TOTAL_CAPACITY)*100);
             const actualPct = Math.round((stats.project/TOTAL_CAPACITY)*100);
             const basePct = Math.min(100-projPct, (stats.baseline/TOTAL_CAPACITY)*100);
-            
-            // VP Trigger for visual: 
-            // For Tim/Glen (ID 3,5): If total > 45
-            // For Others: If baseline < 27 (which means Project > 18)
             const isVP = [3, 5].includes(p.id) ? stats.project > 45 : stats.baseline < 27;
 
             let displayTasks = p.tasks.filter(t => t.end >= currentWeekStart && t.start <= addDays(currentWeekStart, 6));
@@ -538,7 +527,7 @@
                         <div class="bar-seg" style="width:${basePct}%; background:var(--locked);">${stats.baseline > 1 ? stats.baseline.toFixed(1)+'h' : ''}</div>
                         <div class="bar-seg" style="width:${projPct}%; background:var(${dept==='eng'?'--primary':'--qual'});">${stats.project>0.5 ? stats.project.toFixed(1)+'h ('+actualPct+'%)' : ''}</div>
                     </div>
-                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required (Baseline < 60%)' : ''}</div>
+                    <div class="context-warning">${isVP ? '⚠️ VP Approval Required' : ''}</div>
                     <div class="task-list">${tasksHtml || '<div style="text-align:center;color:#ccc;">No tasks</div>'}</div>
                 </div>
             `;
@@ -549,6 +538,7 @@
     function renderCompleted() {
         const tbody = document.querySelector('#masterHistoryTable tbody');
         tbody.innerHTML = '';
+        if(!window.PERSONNEL) return;
         
         let allCompleted = [];
         window.PERSONNEL.forEach(p => {
@@ -586,7 +576,6 @@
         if(end < start) return alert("End < Start");
         let cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
         
-        // Manual override for specific types
         if(['Other','Meeting','PTO','Holiday'].includes(type)) { 
             if(!manual) return alert("Enter total hours"); 
             cost = manual; 
@@ -596,31 +585,26 @@
         const duration = (end - start)/(1000*60*60*24) + 1;
         const dailyRate = totalHours / Math.max(1, duration);
 
-        // --- VP CHECK LOGIC (UPDATED) ---
+        // --- VP CHECK LOGIC ---
         const person = window.PERSONNEL.find(x => x.id == pId);
         const targetWeek = getMonday(start);
         
-        // Existing Project Load
         const stats = getWeeklyLoad(person, targetWeek);
         const currentProjectLoad = stats.project;
         
-        // New Impact (est. 5 day overlap max)
         const overlapDays = Math.min(5, duration); 
         const newProjectImpact = dailyRate * overlapDays;
         const projectedProjectTotal = currentProjectLoad + newProjectImpact;
         
-        // Check conditions based on person type
         let triggerVP = false;
         let warningMsg = "";
 
         if ([3, 5].includes(person.id)) {
-            // Tim/Glen: Trigger if Total > 45
             if (projectedProjectTotal > 45) {
                 triggerVP = true;
                 warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
             }
         } else {
-            // Others: Trigger if Project > 18 (which forces Baseline < 27)
             if (projectedProjectTotal > 18) {
                 triggerVP = true;
                 warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
@@ -666,19 +650,19 @@
         if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
     }
 
-    window.openBlock = (pId, tId) => { activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
+    window.openBlock = (pId, tId) => { window.activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
     
     window.confirmBlock = async () => {
-        const p = window.PERSONNEL.find(x => x.id === activeTaskForModal.pId);
+        const p = window.PERSONNEL.find(x => x.id === window.activeTaskForModal.pId);
         const tasks = [...p.tasks];
-        const t = tasks.find(x => x.id === activeTaskForModal.tId);
+        const t = tasks.find(x => x.id === window.activeTaskForModal.tId);
         t.blocked = true;
         
         const reason = document.getElementById('blockReason').value;
         if(!t.history) t.history = [];
-        t.history.push({date: new Date(), action: `Blocked: ${reason}`});
+        t.history.push({date: new Date(), action: `Blocked: ${reason || 'No reason'}`});
         
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", activeTaskForModal.pId.toString()), { tasks });
+        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", window.activeTaskForModal.pId.toString()), { tasks });
         closeModal('blockModal');
         document.getElementById('blockReason').value = ''; 
     }
@@ -703,7 +687,7 @@
     
     // NEW EDIT FUNCTIONS
     window.openEdit = (pId, tId) => {
-        activeTaskForModal = {pId, tId};
+        window.activeTaskForModal = {pId, tId};
         const p = window.PERSONNEL.find(x => x.id === pId);
         const t = p.tasks.find(x => x.id === tId);
         document.getElementById('editStart').valueAsDate = t.start;
@@ -713,7 +697,7 @@
     }
 
     window.saveEditTask = async () => {
-        const {pId, tId} = activeTaskForModal;
+        const {pId, tId} = window.activeTaskForModal;
         const p = window.PERSONNEL.find(x => x.id === pId);
         const tasks = [...p.tasks];
         const t = tasks.find(x => x.id === tId);
