@@ -67,7 +67,6 @@
         .task-item.overdue { border: 2px solid var(--danger); box-shadow: 0 0 8px rgba(220, 38, 38, 0.15); }
         .task-item.completed { opacity: 0.6; background: #f0fdf4; border-color: #86efac; border-left-color: #166534; }
         
-        /* PTO Styles */
         .task-item.type-PTO, .task-item.type-Holiday { border-left-color: var(--pto); background: #f9fafb; background-image: repeating-linear-gradient(45deg, #f9fafb, #f9fafb 10px, #f3f4f6 10px, #f3f4f6 20px); }
         .task-item.type-PTO .task-desc, .task-item.type-Holiday .task-desc { color: #6b7280; font-style: italic; }
 
@@ -101,7 +100,7 @@
 </head>
 <body>
 
-<div id="loadingOverlay">Loading Data...</div>
+<div id="loadingOverlay">Connecting to Database...</div>
 
 <div class="container">
     <header>
@@ -257,25 +256,33 @@
       from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // -----------------------------------------------------------
-    // 🚨 PASTE YOUR FIREBASE CONFIG HERE 🚨
+    // 🚨 KEYS INSERTED FROM YOUR PROMPT 🚨
     // -----------------------------------------------------------
     const firebaseConfig = {
-        apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
-        authDomain: "engineering-task-tracker.firebaseapp.com",
-        projectId: "engineering-task-tracker",
-        storageBucket: "engineering-task-tracker.firebasestorage.app",
-        messagingSenderId: "881070104494",
-        appId: "1:881070104494:web:1ded65fe520f3e5817723f",
-        measurementId: "G-5TF7EYQ4YC"
+      apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
+      authDomain: "engineering-task-tracker.firebaseapp.com",
+      projectId: "engineering-task-tracker",
+      storageBucket: "engineering-task-tracker.firebasestorage.app",
+      messagingSenderId: "881070104494",
+      appId: "1:881070104494:web:1ded65fe520f3e5817723f",
+      measurementId: "G-5TF7EYQ4YC"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
-    window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
+    let app, db;
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        window.db = db;
+        window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
+        console.log("Firebase initialized successfully");
+    } catch (error) {
+        document.getElementById('loadingOverlay').innerHTML = `<div style="color:red; text-align:center;">Connection Failed<br><small>${error.message}</small></div>`;
+        alert("Database Connection Failed. Check console for details.");
+        console.error("Firebase Init Error:", error);
+    }
 
     // --- GLOBAL VARS ---
-    window.activeTaskForModal = null; // Ensure global scope
+    window.activeTaskForModal = null; 
 
     // --- REPAIR TOOL (Fixes "Late" History) ---
     async function repairLegacyData(personnelList) {
@@ -300,6 +307,7 @@
     }
 
     async function initDB() {
+        if(!db) return; // Stop if init failed
         const personnel = [
             {id:0, name:"Maxwell", role:"Eng 1", dept:"eng"}, {id:1, name:"Lee", role:"Eng 2", dept:"eng"},
             {id:2, name:"Jordon", role:"Eng 3", dept:"eng"}, {id:3, name:"Tim", role:"Lab Tech", dept:"eng"},
@@ -350,6 +358,16 @@
         if(!window.repaired) { repairLegacyData(window.PERSONNEL); window.repaired=true; }
         document.getElementById('loadingOverlay').style.display = 'none';
         refreshActiveView();
+    }, (error) => {
+        // ERROR HANDLING FOR PERMISSIONS
+        console.error("Firestore Listen Error:", error);
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingOverlay').innerHTML = `<div style="text-align:center; padding:20px; background:white; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.2);">
+            <h3 style="color:red">Connection Error</h3>
+            <p>${error.code}</p>
+            <p style="font-size:0.8em; color:#666;">If you see 'permission-denied', your API key is blocked.<br>
+            If you are running this locally, you must add <strong>localhost</strong> to your API Key restrictions.</p>
+        </div>`;
     });
 
     onSnapshot(doc(db, "config", "standards"), (d) => {
@@ -605,6 +623,7 @@
                 warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
             }
         } else {
+            // For standard employees, trigger if project work exceeds 18h (which pushes Baseline < 27)
             if (projectedProjectTotal > 18) {
                 triggerVP = true;
                 warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
