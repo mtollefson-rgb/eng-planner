@@ -13,8 +13,9 @@
             --pto: #9ca3af; 
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #1f2937; }
-        .container { max-width: 1600px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 20px; }
+        .container { max-width: 1600px; margin: 0 auto; display: none; /* Hidden by default for login */ }
+        header { text-align: center; margin-bottom: 20px; position: relative; }
+        .logout-btn { position: absolute; top: 0; right: 0; background: none; border: none; color: var(--danger); cursor: pointer; text-decoration: underline; font-size: 0.9em; }
 
         /* Navigation */
         .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
@@ -95,17 +96,32 @@
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 500px; border-radius: 8px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .close-x { float: right; font-size: 24px; cursor: pointer; color: #999; }
         
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; flex-direction:column; justify-content: center; align-items: center; font-size: 1.2em; font-weight: bold; color: var(--primary); }
+        /* LOGIN SCREEN STYLES */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f3f4f6; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        .login-box h2 { margin-top: 0; color: var(--primary); }
+        .login-box input { margin-bottom: 15px; width: 100%; }
+        .login-error { color: var(--danger); font-size: 0.9em; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
-<div id="loadingOverlay">Loading App Data...</div>
+<div id="loginOverlay">
+    <div class="login-box" id="loginBox">
+        <h2>Planner Login</h2>
+        <div id="loginError" class="login-error">Invalid Email or Password</div>
+        <input type="email" id="loginEmail" placeholder="Email Address">
+        <input type="password" id="loginPass" placeholder="Password">
+        <button class="action-btn" style="width:100%" onclick="handleLogin()">Sign In</button>
+    </div>
+    <div id="loadingMsg" style="display:none; margin-top:20px; font-weight:bold; color:#666;">Loading System...</div>
+</div>
 
-<div class="container">
+<div class="container" id="mainApp">
     <header>
         <h1>Dept. Resource & Quality Planner</h1>
         <p>Engineering (Max, Lee, Jordon, Tim) • Quality (Ron, Glen)</p>
+        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
     </header>
 
     <div class="nav-tabs">
@@ -252,11 +268,11 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } 
-      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     // -----------------------------------------------------------
-    // 🚨 KEYS INSERTED FROM YOUR PROMPT 🚨
+    // 🚨 PASTE YOUR FIREBASE CONFIG HERE 🚨
     // -----------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDxQrOoHYKqPn1lJ52NW1XvDB05PpNGwKU",
@@ -268,15 +284,46 @@
       measurementId: "G-5TF7EYQ4YC"
     };
 
-    let app, db;
+    let app, db, auth;
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
+        auth = getAuth(app);
         window.db = db;
         window.dbOps = { doc, updateDoc, arrayUnion, setDoc, getDoc, onSnapshot };
     } catch (error) {
-        document.getElementById('loadingOverlay').innerHTML = `<div style="color:red; text-align:center;">Connection Failed<br><small>${error.message}</small></div>`;
+        alert("Firebase Connection Failed: " + error.message);
     }
+
+    // --- AUTHENTICATION LOGIC ---
+    window.handleLogin = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, email, pass)
+            .catch((error) => {
+                const errBox = document.getElementById('loginError');
+                errBox.style.display = 'block';
+                errBox.innerText = "Login Failed: " + error.message;
+            });
+    };
+
+    window.handleLogout = () => {
+        signOut(auth).then(() => location.reload());
+    };
+
+    // Watch for login status
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // User is signed in
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            initDB(); // Start the app
+        } else {
+            // User is signed out
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+    });
 
     // --- GLOBAL VARS & DEFAULTS ---
     window.activeTaskForModal = null; 
@@ -384,7 +431,6 @@
         if(newPersonnel.length > 0) window.PERSONNEL = newPersonnel;
         
         if(!window.repaired) { repairLegacyData(window.PERSONNEL); window.repaired=true; }
-        document.getElementById('loadingOverlay').style.display = 'none';
         refreshActiveView();
     });
 
@@ -406,7 +452,6 @@
         }
     });
 
-    initDB();
 </script>
 
 <script>
@@ -593,6 +638,7 @@
         if(end < start) return alert("End < Start");
         let cost = window.CATEGORY_COSTS[cat]?.[type] || 0;
         
+        // Manual override for specific types
         if(['Other','Meeting','PTO','Holiday'].includes(type)) { 
             if(!manual) return alert("Enter total hours"); 
             cost = manual; 
@@ -602,26 +648,31 @@
         const duration = (end - start)/(1000*60*60*24) + 1;
         const dailyRate = totalHours / Math.max(1, duration);
 
-        // --- VP CHECK LOGIC ---
+        // --- VP CHECK LOGIC (UPDATED) ---
         const person = window.PERSONNEL.find(x => x.id == pId);
         const targetWeek = getMonday(start);
         
+        // Existing Project Load
         const stats = getWeeklyLoad(person, targetWeek);
         const currentProjectLoad = stats.project;
         
+        // New Impact (est. 5 day overlap max)
         const overlapDays = Math.min(5, duration); 
         const newProjectImpact = dailyRate * overlapDays;
         const projectedProjectTotal = currentProjectLoad + newProjectImpact;
         
+        // Check conditions based on person type
         let triggerVP = false;
         let warningMsg = "";
 
         if ([3, 5].includes(person.id)) {
+            // Tim/Glen: Trigger if Total > 45
             if (projectedProjectTotal > 45) {
                 triggerVP = true;
                 warningMsg = `This task pushes total workload to ${projectedProjectTotal.toFixed(1)}h (Limit: 45h).`;
             }
         } else {
+            // Others: Trigger if Project > 18 (which forces Baseline < 27)
             if (projectedProjectTotal > 18) {
                 triggerVP = true;
                 warningMsg = `This forces Baseline work below 60% (27h). New Project Load: ${projectedProjectTotal.toFixed(1)}h.`;
@@ -667,106 +718,6 @@
         if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
     }
 
-    window.openBlock = (pId, tId) => { window.activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
-    
-    window.confirmBlock = async () => {
-        const p = window.PERSONNEL.find(x => x.id === window.activeTaskForModal.pId);
-        const tasks = [...p.tasks];
-        const t = tasks.find(x => x.id === window.activeTaskForModal.tId);
-        t.blocked = true;
-        
-        const reason = document.getElementById('blockReason').value;
-        if(!t.history) t.history = [];
-        t.history.push({date: new Date(), action: `Blocked: ${reason || 'No reason'}`});
-        
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", window.activeTaskForModal.pId.toString()), { tasks });
-        closeModal('blockModal');
-        document.getElementById('blockReason').value = ''; 
-    }
-
-    window.openHistory=(p,t)=>{
-        document.getElementById('historyLog').innerHTML=window.PERSONNEL.find(x=>x.id===p).tasks.find(x=>x.id===t).history.map(h=>`<div style="border-bottom:1px solid #eee;padding:5px;">${new Date(h.date.toDate?h.date.toDate():h.date).toLocaleString()}: ${h.action}</div>`).join('');
-        document.getElementById('historyModal').style.display='block';
-    }
-    window.openAssignModal=()=>{
-        const sel=document.getElementById('assignTarget');sel.innerHTML='';
-        window.PERSONNEL.forEach(p=>sel.add(new Option(p.name,p.id)));
-        document.getElementById('assignModal').style.display='block';
-    }
-    window.confirmAssign=async()=>{
-        const pId=document.getElementById('assignTarget').value;
-        const total=parseFloat(document.getElementById('calcResult').innerText);
-        const days=Math.max(1,Math.ceil(total/5));
-        const task={id:Date.now(), category:document.getElementById('calcCat').value, type:document.getElementById('calcType').value, qty:document.getElementById('calcQty').value, start:new Date(), end:addDays(new Date(), days), totalHours:total, dailyRate:total/days, costPerUnit:total/document.getElementById('calcQty').value, priority:'Medium', blocked:false, history:[{date:new Date(), action:"Calc Assign"}]};
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db,"personnel",pId),{tasks:window.dbOps.arrayUnion(task)});
-        closeModal('assignModal');
-    }
-    
-    // NEW EDIT FUNCTIONS
-    window.openEdit = (pId, tId) => {
-        window.activeTaskForModal = {pId, tId};
-        const p = window.PERSONNEL.find(x => x.id === pId);
-        const t = p.tasks.find(x => x.id === tId);
-        document.getElementById('editStart').valueAsDate = t.start;
-        document.getElementById('editEnd').valueAsDate = t.end;
-        document.getElementById('editDetails').value = t.details || "";
-        document.getElementById('editModal').style.display = 'block';
-    }
-
-    window.saveEditTask = async () => {
-        const {pId, tId} = window.activeTaskForModal;
-        const p = window.PERSONNEL.find(x => x.id === pId);
-        const tasks = [...p.tasks];
-        const t = tasks.find(x => x.id === tId);
-
-        const newStart = parseDate(document.getElementById('editStart').value);
-        const newEnd = parseDate(document.getElementById('editEnd').value);
-        if (newEnd < newStart) return alert("End date cannot be before start date");
-
-        t.start = newStart;
-        t.end = newEnd;
-        t.details = document.getElementById('editDetails').value;
-
-        // Recalc Rate
-        const duration = (t.end - t.start) / (1000 * 60 * 60 * 24) + 1;
-        t.dailyRate = t.totalHours / Math.max(1, duration);
-        t.history.push({date: new Date(), action: "Edited Details/Date"});
-
-        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", pId.toString()), { tasks });
-        closeModal('editModal');
-    }
-
-    // --- UI HELPER: Update Week Display ---
-    function updateWeekDisplay() {
-        const endOfWeek = addDays(currentWeekStart, 4);
-        document.querySelectorAll('.current-week-display').forEach(e => 
-            e.innerText = `${currentWeekStart.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`
-        );
-    }
-
-    window.changeWeek = (d) => { 
-        currentWeekStart = addDays(currentWeekStart, d*7); 
-        updateWeekDisplay(); 
-        refreshActiveView(); 
-    }
-
-    window.switchView = (e, v) => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'qual-active'));
-        e.target.classList.add(v === 'quality' ? 'qual-active' : 'active');
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(v+'View').classList.add('active');
-        refreshActiveView();
-    }
-    
-    function refreshActiveView() {
-        if(document.getElementById('engineeringView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('qualityView').classList.contains('active')) renderDashboard();
-        if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
-        if(document.getElementById('samplesView').classList.contains('active')) renderSamples();
-        if(document.getElementById('timestudyView').classList.contains('active')) renderTimeStudy();
-        if(document.getElementById('summaryView').classList.contains('active')) renderSummary();
-    }
-
     // --- SAMPLES ---
     function renderSamples() {
         if(!chartsLoaded) return;
@@ -798,7 +749,7 @@
             // FIXED MARGINS FOR FIRST CHART
             new google.visualization.LineChart(div.lastElementChild).draw(data, {
                 legend: 'bottom', 
-                chartArea: { left: '10%', top: 20, width: '85%', height: '70%' }, 
+                chartArea: { left: '10%', top: 20, width: '80%', height: '70%' }, 
                 hAxis: { textStyle: { fontSize: 10 } },
                 series: { 1: { lineDashStyle: [4, 4], color: 'red' } }
             });
@@ -997,6 +948,88 @@
         const cost = window.CATEGORY_COSTS[document.getElementById('calcCat').value]?.[document.getElementById('calcType').value]||0;
         document.getElementById('calcResult').innerText = (cost * document.getElementById('calcQty').value).toFixed(1);
     }
+    window.switchView = (e, v) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'qual-active'));
+        e.target.classList.add(v === 'quality' ? 'qual-active' : 'active');
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(v+'View').classList.add('active');
+        refreshActiveView();
+    }
+    function refreshActiveView() {
+        if(document.getElementById('engineeringView').classList.contains('active')) renderDashboard();
+        if(document.getElementById('qualityView').classList.contains('active')) renderDashboard();
+        if(document.getElementById('completedView').classList.contains('active')) renderCompleted();
+        
+        // SAMPLE TRACKING & EXEC SUMMARY: WAIT FOR CHARTS
+        if (chartsLoaded && google.visualization && google.visualization.arrayToDataTable) {
+            if(document.getElementById('samplesView').classList.contains('active')) renderSamples();
+            if(document.getElementById('timestudyView').classList.contains('active')) renderTimeStudy();
+            if(document.getElementById('summaryView').classList.contains('active')) renderSummary();
+        } else {
+            // If charts aren't ready, just retry in 300ms. 
+            // Don't draw broken empty charts.
+            setTimeout(refreshActiveView, 300);
+        }
+    }
+    window.changeWeek = (d) => { currentWeekStart = addDays(currentWeekStart, d*7); updateWeekDisplay(); refreshActiveView(); }
+    function updateWeekDisplay() { document.querySelectorAll('.current-week-display').forEach(e => e.innerText = `${currentWeekStart.toLocaleDateString()} - ${addDays(currentWeekStart, 4).toLocaleDateString()}`); }
+    
+    // NEW EDIT FUNCTIONS
+    window.openEdit = (pId, tId) => {
+        window.activeTaskForModal = {pId, tId};
+        const p = window.PERSONNEL.find(x => x.id === pId);
+        const t = p.tasks.find(x => x.id === tId);
+        document.getElementById('editStart').valueAsDate = t.start;
+        document.getElementById('editEnd').valueAsDate = t.end;
+        document.getElementById('editDetails').value = t.details || "";
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    window.saveEditTask = async () => {
+        const {pId, tId} = window.activeTaskForModal;
+        const p = window.PERSONNEL.find(x => x.id === pId);
+        const tasks = [...p.tasks];
+        const t = tasks.find(x => x.id === tId);
+
+        const newStart = parseDate(document.getElementById('editStart').value);
+        const newEnd = parseDate(document.getElementById('editEnd').value);
+        if (newEnd < newStart) return alert("End date cannot be before start date");
+
+        t.start = newStart;
+        t.end = newEnd;
+        t.details = document.getElementById('editDetails').value;
+
+        // Recalc Rate
+        const duration = (t.end - t.start) / (1000 * 60 * 60 * 24) + 1;
+        t.dailyRate = t.totalHours / Math.max(1, duration);
+        t.history.push({date: new Date(), action: "Edited Details/Date"});
+
+        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", pId.toString()), { tasks });
+        closeModal('editModal');
+    }
+
+    window.openBlock = (pId, tId) => { window.activeTaskForModal = {pId, tId}; document.getElementById('blockModal').style.display='block'; }
+    
+    window.confirmBlock = async () => {
+        const p = window.PERSONNEL.find(x => x.id === window.activeTaskForModal.pId);
+        const tasks = [...p.tasks];
+        const t = tasks.find(x => x.id === window.activeTaskForModal.tId);
+        t.blocked = true;
+        
+        const reason = document.getElementById('blockReason').value;
+        if(!t.history) t.history = [];
+        t.history.push({date: new Date(), action: `Blocked: ${reason || 'No reason'}`});
+        
+        await window.dbOps.updateDoc(window.dbOps.doc(window.db, "personnel", window.activeTaskForModal.pId.toString()), { tasks });
+        closeModal('blockModal');
+        document.getElementById('blockReason').value = ''; 
+    }
+
+    window.openHistory=(p,t)=>{
+        document.getElementById('historyLog').innerHTML=window.PERSONNEL.find(x=>x.id===p).tasks.find(x=>x.id===t).history.map(h=>`<div style="border-bottom:1px solid #eee;padding:5px;">${new Date(h.date.toDate?h.date.toDate():h.date).toLocaleString()}: ${h.action}</div>`).join('');
+        document.getElementById('historyModal').style.display='block';
+    }
+
 </script>
 </body>
 </html>
